@@ -8,7 +8,6 @@ pub mod file;
 pub mod mkdir;
 pub mod slice;
 pub mod sync_on_close;
-pub mod tokio_handle_ext;
 
 /// Excludes only the unreserved URI characters in RFC-3986:
 ///

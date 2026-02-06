@@ -70,4 +70,19 @@ impl OptIOMetrics {
 
         out
     }
+
+    pub async fn record_bytes_tx<F, O>(&self, num_bytes: u64, fut: F) -> O
+    where
+        F: Future<Output = O>,
+    {
+        let io_session = self.start_io_session();
+
+        let out = fut.await;
+
+        drop(io_session);
+
+        self.add_bytes_sent(num_bytes);
+
+        out
+    }
 }
