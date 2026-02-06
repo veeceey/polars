@@ -45,6 +45,18 @@ impl CloudWriter {
         }
     }
 
+    pub fn as_buffered<'a>(
+        &'a mut self,
+        buffer_chunk_size: NonZeroUsize,
+    ) -> BufferedCloudWriter<'a> {
+        BufferedCloudWriter {
+            writer: self,
+            buffer_chunk_size,
+            buffered: vec![],
+            num_bytes_buffered: 0,
+        }
+    }
+
     async fn get_or_init_multipart(
         &mut self,
     ) -> object_store::Result<&mut (dyn object_store::MultipartUpload + 'static)> {
@@ -86,5 +98,27 @@ impl CloudWriter {
         self.tasks.push(handle);
 
         Ok(())
+    }
+
+    pub async fn finish(&mut self) -> object_store::Result<()> {
+        self.multipart.take().unwrap().complete().await?;
+        self.error_handle.take().unwrap().join().await?;
+
+        Ok(())
+    }
+}
+
+pub struct BufferedCloudWriter<'a> {
+    writer: &'a mut CloudWriter,
+    buffer_chunk_size: NonZeroUsize,
+    buffered: Vec<bytes::Bytes>,
+    num_bytes_buffered: u64,
+}
+
+impl BufferedCloudWriter<'_> {
+    pub async fn put(
+        &mut self,
+        bytes: impl IntoIterator<Item = bytes::Bytes>,
+    ) -> object_store::Result<()> {
     }
 }
