@@ -191,6 +191,12 @@ class ExprListNameSpace:
             raise ValueError(msg)
 
         if fraction is not None:
+            # Validate fraction if it's a scalar float
+            if isinstance(fraction, (int, float)):
+                if not 0.0 <= fraction <= 1.0:
+                    msg = f"`fraction` must be between 0.0 and 1.0, got {fraction}"
+                    raise ValueError(msg)
+
             fraction_pyexpr = parse_into_expression(fraction)
             return wrap_expr(
                 self._pyexpr.list_sample_fraction(
